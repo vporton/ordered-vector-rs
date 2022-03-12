@@ -5,7 +5,7 @@ use bisection::bisect_left_by;
 trait Resort<T> where Self: Index<usize, Output = T> {
     /// Sort again already sorted sequence after the element at `index` changed.
     fn resort_element(&mut self, index: usize)
-        where Self::Output: Ord + Sized
+        where Self::Output: Ord
     {
         self.resort_element_by(index, |e, value| T::cmp(e, &value));
     }
