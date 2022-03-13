@@ -13,14 +13,32 @@ trait Resort<T> where Self: Index<usize, Output = T> {
     }
 }
 
+trait InsertSorted<T> where Self: Index<usize, Output = T> {
+    fn insert_sorted_by<F>(&mut self, value: T, f: F)
+        where F: FnMut(&T, &T) -> Ordering;
+    fn insert_sorted(&mut self, value: T)
+        where Self::Output: Ord
+    {
+        self.insert_sorted_by(value, |e, value| T::cmp(e, &value));
+    }
+}
+
+impl<T: Ord> InsertSorted<T> for Vec<T> {
+    fn insert_sorted_by<F>(&mut self, value: T, mut f: F)
+        where F: FnMut(&T, &T) -> Ordering
+    {
+        let index = bisect_left_by(self.as_slice(), |e| f(e,&value));
+        self.insert(index, value);
+    }
+}
+
 impl<T: Ord> Resort<T> for Vec<T> {
     // TODO: It can be made more efficient.
-    fn resort_element_by<F>(&mut self, index: usize, mut f: F)
+    fn resort_element_by<F>(&mut self, index: usize, f: F)
         where F: FnMut(&T, &T) -> Ordering
     {
         let value = self.remove(index);
-        let new_index = bisect_left_by(self.as_slice(), |e| f(e, &value));
-        self.insert(new_index, value);
+        self.insert_sorted_by(value, f);
     }
 }
 
