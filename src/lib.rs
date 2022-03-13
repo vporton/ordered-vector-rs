@@ -3,14 +3,14 @@ use std::ops::Index;
 use bisection::bisect_left_by;
 
 trait Resort<T> where Self: Index<usize, Output = T> {
+    fn resort_element_by<F>(&mut self, index: usize, f: F)
+        where F: FnMut(&T, &T) -> Ordering;
     /// Sort again already sorted sequence after the element at `index` changed.
     fn resort_element(&mut self, index: usize)
         where Self::Output: Ord
     {
         self.resort_element_by(index, |e, value| T::cmp(e, &value));
     }
-    fn resort_element_by<F>(&mut self, index: usize, f: F)
-        where F: FnMut(&T, &T) -> Ordering;
 }
 
 impl<T: Ord> Resort<T> for Vec<T> {
