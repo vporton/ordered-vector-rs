@@ -3,42 +3,44 @@ use std::ops::Index;
 use bisection::bisect_left_by;
 
 trait Resort<T> where Self: Index<usize, Output = T> {
-    fn resort_element_by<F>(&mut self, index: usize, f: F)
+    fn resort_element_by<F>(&mut self, index: usize, f: F) -> usize
         where F: FnMut(&T, &T) -> Ordering;
     /// Sort again already sorted sequence after the element at `index` changed.
-    fn resort_element(&mut self, index: usize)
+    /// Returns new index.
+    fn resort_element(&mut self, index: usize) -> usize
         where Self::Output: Ord
     {
-        self.resort_element_by(index, |e, value| T::cmp(e, &value));
+        self.resort_element_by(index, |e, value| T::cmp(e, &value))
     }
 }
 
 trait InsertSorted<T> where Self: Index<usize, Output = T> {
-    fn insert_sorted_by<F>(&mut self, value: T, f: F)
+    fn insert_sorted_by<F>(&mut self, value: T, f: F) -> usize
         where F: FnMut(&T, &T) -> Ordering;
-    fn insert_sorted(&mut self, value: T)
+    fn insert_sorted(&mut self, value: T) -> usize
         where Self::Output: Ord
     {
-        self.insert_sorted_by(value, |e, value| T::cmp(e, &value));
+        self.insert_sorted_by(value, |e, value| T::cmp(e, &value))
     }
 }
 
 impl<T: Ord> InsertSorted<T> for Vec<T> {
-    fn insert_sorted_by<F>(&mut self, value: T, mut f: F)
+    fn insert_sorted_by<F>(&mut self, value: T, mut f: F) -> usize
         where F: FnMut(&T, &T) -> Ordering
     {
         let index = bisect_left_by(self.as_slice(), |e| f(e,&value));
         self.insert(index, value);
+        index
     }
 }
 
 impl<T: Ord> Resort<T> for Vec<T> {
     // TODO: It can be made more efficient.
-    fn resort_element_by<F>(&mut self, index: usize, f: F)
+    fn resort_element_by<F>(&mut self, index: usize, f: F) -> usize
         where F: FnMut(&T, &T) -> Ordering
     {
         let value = self.remove(index);
-        self.insert_sorted_by(value, f);
+        self.insert_sorted_by(value, f)
     }
 }
 
