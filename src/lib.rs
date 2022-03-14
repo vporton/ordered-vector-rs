@@ -2,7 +2,7 @@ use std::cmp::Ordering;
 use std::ops::Index;
 use bisection::bisect_left_by;
 
-trait Resort<T> where Self: Index<usize, Output = T> {
+pub trait Resort<T> where Self: Index<usize, Output = T> {
     fn resort_element_by<F>(&mut self, index: usize, f: F) -> usize
         where F: FnMut(&T, &T) -> Ordering;
     /// Sort again already sorted sequence after the element at `index` changed.
@@ -14,7 +14,7 @@ trait Resort<T> where Self: Index<usize, Output = T> {
     }
 }
 
-trait InsertSorted<T> where Self: Index<usize, Output = T> {
+pub trait InsertSorted<T> where Self: Index<usize, Output = T> {
     fn insert_sorted_by<F>(&mut self, value: T, f: F) -> usize
         where F: FnMut(&T, &T) -> Ordering;
     fn insert_sorted(&mut self, value: T) -> usize
